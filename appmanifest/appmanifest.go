@@ -131,21 +131,19 @@ func createAppManifest(path, url string, writer io.Writer) error {
 // reads a file and returns a slice of hashes, one for each
 // 10mb chunk
 func calculateMD5s(file io.Reader) ([]string, error) {
+	h := md5.New()
 	var md5s []string
-	buf := make([]byte, MaxChunkSize)
 	for {
-		n, err := file.Read(buf[:cap(buf)])
-		buf = buf[:n]
-		if n == 0 {
-			if err == nil {
-				continue
-			}
-			if err == io.EOF {
-				break
-			}
+		_, err := io.CopyN(h, file, MaxChunkSize)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
 			return nil, err
 		}
-		md5s = append(md5s, fmt.Sprintf("%x", md5.Sum(buf)))
+		md5s = append(md5s, fmt.Sprintf("%x", h.Sum(nil)))
+		h.Reset()
+
 	}
 	return md5s, nil
 }

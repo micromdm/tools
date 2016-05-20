@@ -27,10 +27,13 @@ func TestCalucalteMD5s(t *testing.T) {
 }
 
 /*
-./appmanifest ~/Microsoft_Excel_2016_Installer.pkg  1.19s user 0.18s system 99% cpu 1.369 total
 Benchmark10MB-8  	    2000	    813545 ns/op	10485878 B/op	      12 allocs/op
 Benchmark100MB-8 	    2000	    858545 ns/op	10485772 B/op	       2 allocs/op
 Benchmark1000MB-8	       1	1513403113 ns/op	10503832 B/op	     623 allocs/op
+
+Benchmark10MB-8  	  500000	      3297 ns/op	   32896 B/op	       3 allocs/op
+Benchmark100MB-8 	  300000	      3528 ns/op	   32897 B/op	       3 allocs/op
+Benchmark1000MB-8	       1	1967685209 ns/op	 3334064 B/op	     829 allocs/op
 */
 
 func benchmarkSize(b *testing.B, size int) {
