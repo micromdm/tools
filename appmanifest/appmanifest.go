@@ -66,6 +66,7 @@ func main() {
 
 	if *flVersion {
 		fmt.Printf("appmanifest - %v\n", version)
+		fmt.Printf("git revision - %v\n", gitHash)
 		os.Exit(0)
 	}
 
