@@ -132,17 +132,20 @@ func createAppManifest(path, url string, writer io.Writer) error {
 // 10mb chunk
 func calculateMD5s(file io.Reader) ([]string, error) {
 	h := md5.New()
+	var err error
 	var md5s []string
 	for {
-		_, err := io.CopyN(h, file, MaxChunkSize)
-		if err != nil && err != io.EOF {
-			return nil, err
+		n, err := io.CopyN(h, file, MaxChunkSize)
+		if n > 0 {
+			md5s = append(md5s, fmt.Sprintf("%x", h.Sum(nil)))
+			h.Reset()
 		}
-		md5s = append(md5s, fmt.Sprintf("%x", h.Sum(nil)))
-		h.Reset()
-		if err == io.EOF {
+		if err != nil {
+			if err == io.EOF {
+				err = nil
+			}
 			break
 		}
 	}
-	return md5s, nil
+	return md5s, err
 }
