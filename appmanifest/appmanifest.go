@@ -135,15 +135,14 @@ func calculateMD5s(file io.Reader) ([]string, error) {
 	var md5s []string
 	for {
 		_, err := io.CopyN(h, file, MaxChunkSize)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
+		if err != nil && err != io.EOF {
 			return nil, err
 		}
 		md5s = append(md5s, fmt.Sprintf("%x", h.Sum(nil)))
 		h.Reset()
-
+		if err == io.EOF {
+			break
+		}
 	}
 	return md5s, nil
 }
