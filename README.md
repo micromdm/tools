@@ -16,4 +16,5 @@ appmanifest [options] /path/to/some.pkg
 
 # Install
 see Releases for binary builds
+
 to build from source, use the make Makefile
