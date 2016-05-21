@@ -18,3 +18,7 @@ appmanifest [options] /path/to/some.pkg
 see Releases for binary builds
 
 to build from source, use the make Makefile
+
+# poke
+send mdm push notification to APNS  
+see `poke` README.md for usage.

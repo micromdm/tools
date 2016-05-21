@@ -1,0 +1,5 @@
+# export from keychain as PKCS#12, not .cer
+MDM_PUSH_CERT=/path/to/pushcert.p12
+MDM_PUSH_PASS=secret
+# defaults to false
+MDM_PUSH_PRODUCTION=true
