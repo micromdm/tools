@@ -132,7 +132,6 @@ func createAppManifest(path, url string, writer io.Writer) error {
 // 10mb chunk
 func calculateMD5s(file io.Reader) ([]string, error) {
 	h := md5.New()
-	var err error
 	var md5s []string
 	for {
 		n, err := io.CopyN(h, file, MaxChunkSize)
@@ -144,8 +143,7 @@ func calculateMD5s(file io.Reader) ([]string, error) {
 			if err == io.EOF {
 				err = nil
 			}
-			break
+			return md5s, err
 		}
 	}
-	return md5s, err
 }
