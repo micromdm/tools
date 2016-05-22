@@ -11,8 +11,8 @@ import (
 	"github.com/groob/plist"
 )
 
-// MaxChunkSize is the max size of each file chunk that needs to be hashed
-const MaxChunkSize = 10 << 20 // 10MB
+// DefaultMD5Size is the default size of each file chunk that needs to be hashed
+const DefaultMD5Size = 10 << 20 // 10MB
 
 // http://help.apple.com/deployment/osx/#/ior5df10f73a
 type manifest struct {
@@ -56,6 +56,7 @@ const usage = `appmanifest [options] /path/to/some.pkg`
 func main() {
 	flVersion := flag.Bool("version", false, "prints the version")
 	flURL := flag.String("url", "", "url of the pkg as it will be on the server")
+	flMD5Size := flag.Int64("md5size", DefaultMD5Size, "md5 hash size in bytes")
 
 	// set usage
 	flag.Usage = func() {
@@ -78,14 +79,14 @@ func main() {
 	}
 
 	path := args[0]
-	if err := createAppManifest(path, *flURL, os.Stdout); err != nil {
+	if err := createAppManifest(path, *flURL, os.Stdout, *flMD5Size); err != nil {
 		log.Fatal(err)
 	}
 
 }
 
 // create manifest and return back a writer
-func createAppManifest(path, url string, writer io.Writer) error {
+func createAppManifest(path, url string, writer io.Writer, md5Size int64) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -97,10 +98,13 @@ func createAppManifest(path, url string, writer io.Writer) error {
 	if err != nil {
 		return err
 	}
-	size := info.Size()
+	fSize := info.Size()
+	if md5Size > fSize {
+		md5Size = fSize
+	}
 
 	// create a list of md5s
-	md5s, err := calculateMD5s(file)
+	md5s, err := calculateMD5s(file, md5Size)
 	if err != nil {
 		return err
 	}
@@ -108,7 +112,7 @@ func createAppManifest(path, url string, writer io.Writer) error {
 	// create an asset
 	ast := asset{
 		Kind:    "software-package",
-		MD5Size: size,
+		MD5Size: md5Size,
 		MD5s:    md5s,
 		URL:     url,
 	}
@@ -130,11 +134,11 @@ func createAppManifest(path, url string, writer io.Writer) error {
 
 // reads a file and returns a slice of hashes, one for each
 // 10mb chunk
-func calculateMD5s(file io.Reader) ([]string, error) {
+func calculateMD5s(f io.Reader, s int64) ([]string, error) {
 	h := md5.New()
 	var md5s []string
 	for {
-		n, err := io.CopyN(h, file, MaxChunkSize)
+		n, err := io.CopyN(h, f, s)
 		if n > 0 {
 			md5s = append(md5s, fmt.Sprintf("%x", h.Sum(nil)))
 			h.Reset()

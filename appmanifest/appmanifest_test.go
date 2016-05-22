@@ -12,9 +12,9 @@ func TestCalucalteMD5s(t *testing.T) {
 		"f1c9645dbc14efddc7d8a322685f26eb",
 		"93b885adfe0da089cdf634904fd59f71",
 	}
-	buf := make([]byte, MaxChunkSize*3+1)
+	buf := make([]byte, DefaultMD5Size*3+1)
 	r := bytes.NewReader(buf)
-	md5s, err := calculateMD5s(r)
+	md5s, err := calculateMD5s(r, DefaultMD5Size)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,18 +39,18 @@ func benchmarkSize(b *testing.B, size int) {
 	r := bytes.NewReader(buf)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		calculateMD5s(r)
+		calculateMD5s(r, DefaultMD5Size)
 	}
 }
 
 func Benchmark10MB(b *testing.B) {
-	benchmarkSize(b, MaxChunkSize)
+	benchmarkSize(b, DefaultMD5Size)
 }
 
 func Benchmark100MB(b *testing.B) {
-	benchmarkSize(b, MaxChunkSize*10)
+	benchmarkSize(b, DefaultMD5Size*10)
 }
 
 func Benchmark1000MB(b *testing.B) {
-	benchmarkSize(b, MaxChunkSize*100)
+	benchmarkSize(b, DefaultMD5Size*100)
 }
