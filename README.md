@@ -1,3 +1,9 @@
+# Install
+see Releases for binary builds
+
+to build from source, use the make Makefile
+
+
 # appmanifest
 
 `appmanifest` takes a pkg and prints an [application manifest](http://help.apple.com/deployment/osx/#/ior5df10f73a)
@@ -14,14 +20,6 @@ appmanifest [options] /path/to/some.pkg
     	prints the version
 ```
 
-# Install
-see Releases for binary builds
-
-to build from source, use the make Makefile
-
-# poke
-send mdm push notification to APNS  
-see `poke` README.md for usage.
 
 # certhelper
 create and manage push certificate
@@ -40,3 +38,8 @@ certhelper vendor -sign -password=secret
 # Now upload the PushCertificateRequest to https://identity.apple.com/pushcert
 ```
 see the `certhelper` README for more details
+
+# poke
+send mdm push notification to APNS  
+see `poke` README.md for usage.
+
