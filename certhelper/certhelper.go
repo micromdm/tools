@@ -96,7 +96,7 @@ func main() {
 				email:        *vendorCSREmail,
 				country:      *vendorCSRCountry,
 				password:     password,
-				pkeyFilename: providerPKeyFilename,
+				pkeyFilename: vendorPKeyFilename,
 				csrFilename:  vendorCSRFilename,
 			}
 			if err := makeCSR(req); err != nil {
