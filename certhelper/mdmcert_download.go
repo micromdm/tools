@@ -4,11 +4,17 @@ package main
 
 import (
 	"bytes"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
+	"encoding/pem"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/fullsailor/pkcs7"
 )
 
 const (
@@ -61,13 +67,59 @@ func sendRequest(client *http.Client, req *http.Request) error {
 		return fmt.Errorf("received bad status from mdmcert.download. status=%q", resp.Status)
 	}
 	var jsn = struct {
-		result string
+		Result string
 	}{}
 	if err := json.NewDecoder(resp.Body).Decode(&jsn); err != nil {
 		return err
 	}
-	if jsn.result != "success" {
-		return fmt.Errorf("got unexpected result body: %q\n", jsn.result)
+	if jsn.Result != "success" {
+		return fmt.Errorf("got unexpected result body: %q\n", jsn.Result)
 	}
 	return nil
+}
+
+// The user will receive a hex encoded p7 file as an email attachment.
+// the file contents is a pkcs7 file, encrypted using the server certificate as the
+// intended recipient.
+// We use the server private key to decode the pkcs7 envelope and extract a
+// base64 encoded plist (same format as the once created by `mapkePushRequestPlist`
+// Once the pkcs7 file is decrypted, we save the file to disk for the user to upload
+// to identity.apple.com for a push certificate.
+func decodeSignedRequest(p7Path, certPath, privPath, privPass string) error {
+	hexBytes, err := ioutil.ReadFile(p7Path)
+	if err != nil {
+		return err
+	}
+	key, err := loadKeyFromFile(privPath, []byte(privPass))
+	if err != nil {
+		return err
+	}
+	certPemBytes, err := ioutil.ReadFile(certPath)
+	if err != nil {
+		return err
+	}
+	pemBlock, _ := pem.Decode(certPemBytes)
+	if pemBlock == nil {
+		return errors.New("PEM decode failed")
+	}
+	if pemBlock.Type != "CERTIFICATE" {
+		return errors.New("unmatched type or headers")
+	}
+	cert, err := x509.ParseCertificate(pemBlock.Bytes)
+	if err != nil {
+		return err
+	}
+	pkcsBytes, err := hex.DecodeString(string(hexBytes))
+	if err != nil {
+		return err
+	}
+	p7, err := pkcs7.Parse(pkcsBytes)
+	if err != nil {
+		return err
+	}
+	content, err := p7.Decrypt(cert, key)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(fmt.Sprintf("mdmcert.download_%s", pushRequestFilename), content, 0666)
 }
