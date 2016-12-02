@@ -25,15 +25,6 @@ func encryptedKey(key *rsa.PrivateKey, password []byte) ([]byte, error) {
 	return out, nil
 }
 
-// create a new RSA private key
-func newRSAKey(bits int) (*rsa.PrivateKey, error) {
-	private, err := rsa.GenerateKey(rand.Reader, bits)
-	if err != nil {
-		return nil, err
-	}
-	return private, nil
-}
-
 // load an encrypted private key from disk
 func loadKeyFromFile(path string, password []byte) (*rsa.PrivateKey, error) {
 	data, err := ioutil.ReadFile(path)
@@ -49,10 +40,12 @@ func loadKeyFromFile(path string, password []byte) (*rsa.PrivateKey, error) {
 		return nil, errors.New("unmatched type or headers")
 	}
 
-	b, err := x509.DecryptPEMBlock(pemBlock, password)
-	if err != nil {
-		return nil, err
+	if string(password) != "" {
+		b, err := x509.DecryptPEMBlock(pemBlock, password)
+		if err != nil {
+			return nil, err
+		}
+		return x509.ParsePKCS1PrivateKey(b)
 	}
-	return x509.ParsePKCS1PrivateKey(b)
-
+	return x509.ParsePKCS1PrivateKey(pemBlock.Bytes)
 }
