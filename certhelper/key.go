@@ -6,11 +6,13 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"io/ioutil"
 )
 
 const (
 	rsaPrivateKeyPEMBlockType = "RSA PRIVATE KEY"
+	privateKeyPEMBlockType    = "PRIVATE KEY"
 )
 
 // protect an rsa key with a password
@@ -36,8 +38,8 @@ func loadKeyFromFile(path string, password []byte) (*rsa.PrivateKey, error) {
 	if pemBlock == nil {
 		return nil, errors.New("PEM decode failed")
 	}
-	if pemBlock.Type != rsaPrivateKeyPEMBlockType {
-		return nil, errors.New("unmatched type or headers")
+	if pemBlock.Type != rsaPrivateKeyPEMBlockType || pemBlock.Type != privateKeyPEMBlockType {
+		return nil, fmt.Errorf("key: unmatched type or headers: %s", pemBlock.Type)
 	}
 
 	if string(password) != "" {

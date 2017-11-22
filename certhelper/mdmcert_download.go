@@ -103,7 +103,7 @@ func decodeSignedRequest(p7Path, certPath, privPath, privPass string) error {
 		return errors.New("PEM decode failed")
 	}
 	if pemBlock.Type != "CERTIFICATE" {
-		return errors.New("unmatched type or headers")
+		return errors.New("certificate: unmatched type or headers")
 	}
 	cert, err := x509.ParseCertificate(pemBlock.Bytes)
 	if err != nil {
